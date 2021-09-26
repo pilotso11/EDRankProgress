@@ -6,7 +6,7 @@ It also shows your progress toward the powers Empire and Federation.
 
 Installation is easy,
   1. just create a subfolder under your EDMC Pluygins directory called "EDRankProgress"
-  2. Download the contents of this repository (you can use the dowlad as a zip file option above) and save them into the EDRankProgress folder you just created.
+  2. Download the contents of this repository (you can use the download as a zip file from the "code" menu above) and save them into the EDRankProgress folder you just created.
  
 # What will I see?
 You will see three new lines that show your progress:
