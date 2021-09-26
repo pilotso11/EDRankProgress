@@ -5,8 +5,8 @@ This plugin for Elite Dangerous Market Connector shows your progress (%) toward 
 It also shows your progress toward the powers Empire and Federation.
 
 Installation is easy,
-  1. just create a subfolder under your EDMC Pluygins directory called "EDRankProgress"
-  2. Download the contents of this repository (you can use the download as a zip file from the "code" menu above) and save them into the EDRankProgress folder you just created.
+  1. Download the zip file from the Releases page
+  2. Extract into our EDMC plugins folder.  Make sure it creates a new Folder called EDRankProgress.
  
 # What will I see?
 You will see three new lines that show your progress:
