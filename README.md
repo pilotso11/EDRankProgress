@@ -10,9 +10,12 @@ Installation is easy,
  
 # What will I see?
 You will see three new lines that show your progress:
-    Horizions Combat %   Trade %    Exploration %
-    Odyssey   Mercenary %  Exobiology %
-    Powers    Empire %     Federation %
+
+    Horizions Combat 15%   Trade 67%    Exploration 53%
+    
+    Odyssey   Mercenary 5%  Exobiology 76%
+    
+    Powers    Empire 35%     Federation 22%
     
 Enjoy.
 
