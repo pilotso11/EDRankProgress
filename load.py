@@ -213,6 +213,7 @@ class RankProgress:
         #    Powers
         frame.columnconfigure(0, weight=1, uniform="a")
         frame.columnconfigure(1, weight=1, uniform="a")
+        frame.columnconfigure(2, weight=5)
         frame_h.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
         frame_o.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
         frame_p.grid(row=1, column=0, columnspan=2, sticky=tk.W + tk.E)
