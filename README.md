@@ -11,11 +11,23 @@ Installation is easy,
 # What will I see?
 You will see three new lines that show your progress:
 
-    Horizions Combat 15%   Trade 67%    Exploration 53%
-    
-    Odyssey   Mercenary 5%  Exobiology 76%
-    
-    Powers    Empire 35%     Federation 22%
+![screenshot](screenshot2.png?raw=true "Screenshot")
+
+# Important Note
+Elite Dangerous doesn't update the progress percentage frequently.  
+You will see the progress updated for sure if you relog or if you complete a rank.
+
+For this reason, the progress will show as 0% when you initially load the plugin.
+
+
+# Options
+There are options to toggle display of the rank as well as the progress.
+![screenshot](screenshot3.png?raw=true "Screenshot")
+
+And an option to display the rank on a separate line for a thinner window.
+![screenshot](screenshot1.png?raw=true "Screenshot")
+
+
     
 Enjoy.
 
