@@ -1,7 +1,7 @@
 # EDRankProgress
 EDMC Rank Progress Plugin
 
-This plugin for Elite Dangerous Market Connector shows your progress (%) toward the next ranks for Combat, Trade, Exploration, Mercenry and Exobiology.  
+This plugin for Elite Dangerous Market Connector shows your progress (%) toward the next ranks for Combat, Trade, Exploration, Mercenary and Exobiology.  
 It also shows your progress toward the powers Empire and Federation.
 
 Installation is easy,
@@ -11,7 +11,7 @@ Installation is easy,
 # What will I see?
 You will see three new lines that show your progress:
 
-![screenshot](screenshot2.png?raw=true "Screenshot")
+![screenshot](screenshot3.png?raw=true "Screenshot")
 
 # Important Note
 Elite Dangerous doesn't update the progress percentage frequently.  
@@ -22,10 +22,10 @@ For this reason, the progress will show as 0% when you initially load the plugin
 
 # Options
 There are options to toggle display of the rank as well as the progress.
-![screenshot](screenshot3.png?raw=true "Screenshot")
+![screenshot](screenshot1.png?raw=true "Screenshot")
 
 And an option to display the rank on a separate line for a thinner window.
-![screenshot](screenshot1.png?raw=true "Screenshot")
+![screenshot](screenshot2.png?raw=true "Screenshot")
 
 
     

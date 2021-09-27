@@ -2,6 +2,8 @@
 EDMC Rank Progress Plugin
 Copyright (c) 2021 Seth Osher, ALl Rights Reserved
 Licensed under AGPLv3
+Version 1.0 - initial release
+Version 1.1 - changed layout and made layout configurable
 """
 
 import tkinter as tk
