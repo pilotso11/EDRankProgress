@@ -4,6 +4,7 @@ Copyright (c) 2021 Seth Osher, ALl Rights Reserved
 Licensed under AGPLv3
 Version 1.0 - initial release
 Version 1.1 - changed layout and made layout configurable
+Version 1.2 - Removed borders, tweaked settings ui
 """
 
 import tkinter as tk
@@ -16,6 +17,7 @@ from config import appname, config
 from theme import theme
 
 PLUGIN_NAME = "EDRankProgress"
+VERSION = "1.2"
 
 LOG = RankLogger()
 
@@ -92,15 +94,15 @@ class RankProgress:
         self.show_rank_row_val = config.get_int('edrp_show_rank_row')
 
         self.frame = None
-        self.labels = []
+        self.labels = dict()
 
         self.log_data()
 
     def log_data(self):
         LOG.log("RankProgress instantiated", "INFO")
-        LOG.log(f"Progress Com={self.combat} Tt={self.trade} Exp={self.explore}", "INFO")
+        LOG.log(f"Progress Com={self.combat} Trd={self.trade} Exp={self.explore}", "INFO")
         LOG.log(f"Progress Merc={self.soldier} Exo={self.exobiologist} Fed={self.federation} Emp={self.empire}", "INFO")
-        LOG.log(f"Rank Com={self.combat_rank} Tt={self.trade_rank} Exp={self.explore_rank}", "INFO")
+        LOG.log(f"Rank Com={self.combat_rank} Trd={self.trade_rank} Exp={self.explore_rank}", "INFO")
         LOG.log(
             f"Rank Merc={self.soldier_rank} Exo={self.exobiologist_rank} Fed={self.federation_rank} Emp={self.empire_rank}",
             "INFO")
@@ -135,26 +137,35 @@ class RankProgress:
         :return: The frame to add to the settings window
         """
         """Plugin preferences setup hook."""
-        PADX = 10  # noqa: N806
-        BUTTONX = 12  # indent Checkbuttons and Radiobuttons # noqa: N806
-        PADY = 2  # close spacing # noqa: N806
-
         frame = nb.Frame(parent)
         frame.columnconfigure(1, weight=1)
 
         self.show_rank_button = nb.Checkbutton(
             # LANG: Settings>EDSM - Label on checkbox for 'send data'
-            frame, text='Show Ranks', variable=self.show_rank
+            frame, text='Show Ranks', variable=self.show_rank,
+            command=self.on_check
         )
-        self.show_rank_button.grid(columnspan=2, padx=BUTTONX, pady=(5, 0), sticky=tk.W)
+        self.show_rank_button.grid(columnspan=2, padx=12, pady=(5, 0), sticky=tk.W)
 
         self.show_rank_row_button = nb.Checkbutton(
             # LANG: Settings>EDSM - Label on checkbox for 'send data'
-            frame, text='Use two rows', variable=self.show_rank_row
+            frame, text='Use separate row for rank', variable=self.show_rank_row
         )
-        self.show_rank_row_button.grid(columnspan=2, padx=BUTTONX, pady=(5, 0), sticky=tk.W)
+        self.show_rank_row_button.grid(columnspan=2, padx=24, pady=(5, 0), sticky=tk.W)
+
+        label = nb.Label(frame, text=f"{PLUGIN_NAME} {VERSION}")
+        label.grid(columnspan=2, padx=12, pady=(10, 0), sticky=tk.W)
+
+        self.on_check() # Set enabled state of second button
 
         return frame
+
+    def on_check(self):
+        # Toggle state of separate row checkbox
+        if self.show_rank.get() == 1:
+            self.show_rank_row_button["state"] = tk.NORMAL
+        else:
+            self.show_rank_row_button["state"] = tk.DISABLED
 
     def on_preferences_closed(self, cmdr: str, is_beta: bool) -> None:
         """
@@ -194,13 +205,14 @@ class RankProgress:
         frame = self.frame
         for widget in frame.winfo_children():
             widget.destroy()
-        self.labels = list()
 
-        frame_h = tk.Frame(frame, borderwidth=1, relief="groove")
+        border = 0
+
+        frame_h = tk.Frame(frame, borderwidth=border, relief="groove")
         frame_h.columnconfigure(1, weight=1)  # Pad the last column
-        frame_o = tk.Frame(frame, borderwidth=1, relief="groove")
+        frame_o = tk.Frame(frame, borderwidth=border, relief="groove")
         frame_o.columnconfigure(1, weight=1)  # Pad the last column
-        frame_p = tk.Frame(frame, borderwidth=1, relief="groove")
+        frame_p = tk.Frame(frame, borderwidth=border, relief="groove")
         # Pad the center column and force the labels and values to be the same width
         frame_p.columnconfigure(0, weight=1, uniform="l")
         frame_p.columnconfigure(1, weight=1, uniform="v")
@@ -218,104 +230,68 @@ class RankProgress:
         frame_o.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
         frame_p.grid(row=1, column=0, columnspan=2, sticky=tk.W + tk.E)
 
+        # Two labels for each
+        self.labels = dict()
+        self.labels["com"] = (tk.Label(frame_h), tk.Label(frame_h))  # combat
+        self.labels["trd"] = (tk.Label(frame_h), tk.Label(frame_h))  # trade
+        self.labels["exp"] = (tk.Label(frame_h), tk.Label(frame_h))  # exploration
+        self.labels["merc"] = (tk.Label(frame_o), tk.Label(frame_o))  # mercenary
+        self.labels["exo"] = (tk.Label(frame_o), tk.Label(frame_o))  # exobiology
+        self.labels["emp"] = (tk.Label(frame_p), tk.Label(frame_p))  # empire
+        self.labels["fed"] = (tk.Label(frame_p), tk.Label(frame_p))  # Federation
+
         if self.show_rank_row_val == 1 and self.show_rank_val == 1:
+
             # Layout with 2 rows, one for Progress and one for Rank
-            self.labels.append((tk.Label(frame_h, text="Horizons", justify="center"),
-                                tk.Label(frame_o, text="Odyssey", justify="center")))
 
-            self.labels[0][0].grid(row=0, column=0, columnspan=2)  # Horizons Label
-            self.labels[0][1].grid(row=0, column=0, columnspan=2)  # Odyssey Label
+            tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
+            tk.Label(frame_h, text="Combat:").grid(row=1, column=0, sticky=tk.W)  # Combat Label
+            self.labels["com"][0].grid(row=1, column=1, sticky=tk.W)  # combat pct
+            self.labels["com"][1].grid(row=2, column=0, columnspan=2)  # combat rank
+            tk.Label(frame_h, text="Trade:").grid(row=3, column=0, sticky=tk.W)  # trade label
+            self.labels["trd"][0].grid(row=3, column=1, sticky=tk.W)
+            self.labels["trd"][1].grid(row=4, column=0, columnspan=2)
+            tk.Label(frame_h, text="Exploration:").grid(row=5, column=0, sticky=tk.W)  # Exploration
+            self.labels["exp"][0].grid(row=5, column=1, sticky=tk.W)
+            self.labels["exp"][1].grid(row=6, column=0, columnspan=2)
 
-            self.labels.append((tk.Label(frame_h, text="Combat:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text="Mercenary:"), tk.Label(frame_o)))
-            self.labels.append((tk.Label(frame_h), tk.Label(frame_h),
-                                tk.Label(frame_o), tk.Label(frame_o)))
-            self.labels[1][0].grid(row=1, column=0, sticky=tk.W)  # Combat Label
-            self.labels[1][1].grid(row=1, column=1, sticky=tk.W)
-            self.labels[2][1].grid(row=2, column=0, columnspan=2)
-            self.labels[1][2].grid(row=1, column=0, sticky=tk.W)  # Mercenary label
-            self.labels[1][3].grid(row=1, column=1, sticky=tk.W)
-            self.labels[2][3].grid(row=2, column=0, columnspan=2)
+            tk.Label(frame_o, text="Odyssey", justify="center").grid(row=0, column=0, columnspan=2)  # Odyssey Label
+            tk.Label(frame_o, text="Mercenary:").grid(row=1, column=0, sticky=tk.W)  # Mercenary label
+            self.labels["merc"][0].grid(row=1, column=1, sticky=tk.W)  # merc pct
+            self.labels["merc"][1].grid(row=2, column=0, columnspan=2)  # merc rank
+            tk.Label(frame_o, text="Exobiology:").grid(row=3, column=0, sticky=tk.W)  # Exobiology
+            self.labels["exo"][0].grid(row=3, column=1, sticky=tk.W)
+            self.labels["exo"][1].grid(row=4, column=0, columnspan=2)
 
-            self.labels.append((tk.Label(frame_h, text="Trade:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text="Exobiology:"), tk.Label(frame_o)))
-            self.labels.append((tk.Label(frame_h), tk.Label(frame_h),
-                                tk.Label(frame_o), tk.Label(frame_o)))
-            self.labels[3][0].grid(row=3, column=0, sticky=tk.W)  # Trade
-            self.labels[3][1].grid(row=3, column=1, sticky=tk.W)
-            self.labels[4][1].grid(row=4, column=0, columnspan=2)
-            self.labels[3][2].grid(row=3, column=0, sticky=tk.W)  # Exobiology
-            self.labels[3][3].grid(row=3, column=1, sticky=tk.W)
-            self.labels[4][3].grid(row=4, column=0, columnspan=2)
-
-            self.labels.append((tk.Label(frame_h, text="Exploration:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text=""), tk.Label(frame_o)))
-            self.labels.append((tk.Label(frame_h), tk.Label(frame_h),
-                                tk.Label(frame_o, text=""), tk.Label(frame_o)))
-            self.labels[5][0].grid(row=5, column=0, sticky=tk.W)  # Exploration
-            self.labels[5][1].grid(row=5, column=1, sticky=tk.W)
-            self.labels[6][1].grid(row=6, column=0, columnspan=2)
-            self.labels[5][2].grid(row=5, column=1, sticky=tk.W)  # Blank
-            self.labels[5][3].grid(row=5, column=2, sticky=tk.W)
-            self.labels[6][3].grid(row=6, column=2, sticky=tk.W)
-
-            self.labels.append((tk.Label(frame_p, text="Powers", justify="center"),))
-            self.labels[7][0].grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
-
-            self.labels.append((tk.Label(frame_p, text="Empire:"), tk.Label(frame_p),
-                                tk.Label(frame_p, text="", justify="center"),
-                                tk.Label(frame_p, text="Federation:"), tk.Label(frame_p)))
-            self.labels.append((tk.Label(frame_p, text=""), tk.Label(frame_p),
-                                tk.Label(frame_p, text="", justify="center"),
-                                tk.Label(frame_p, text=""), tk.Label(frame_p)))
-            self.labels[8][0].grid(row=1, column=0, sticky=tk.W)  # Empire
-            self.labels[8][1].grid(row=1, column=1, sticky=tk.W)
-            self.labels[9][1].grid(row=2, column=0, columnspan=2)
-            self.labels[8][2].grid(row=1, column=2, sticky=tk.W)
-            self.labels[8][3].grid(row=1, column=3, sticky=tk.W)  # Federation
-            self.labels[8][4].grid(row=1, column=4, sticky=tk.W)
-            self.labels[9][4].grid(row=2, column=3, columnspan=2)
+            tk.Label(frame_p, text="Powers", justify="center").grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
+            tk.Label(frame_p, text="Empire:").grid(row=1, column=0, sticky=tk.W)  # Empire
+            self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
+            self.labels["emp"][1].grid(row=2, column=0, columnspan=2)
+            tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
+            self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
+            self.labels["fed"][1].grid(row=2, column=3, columnspan=2)
 
         else:
             # Layout with 1 rows, one for Progress and Rank if enabled
-            self.labels.append((tk.Label(frame_h, text="Horizons", justify="center"),
-                                tk.Label(frame_o, text="Odyssey", justify="center")))
+            tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
+            tk.Label(frame_h, text="Combat:").grid(row=1, column=0, sticky=tk.W)  # Combat Label
+            self.labels["com"][0].grid(row=1, column=1, sticky=tk.W)
+            tk.Label(frame_h, text="Trade:").grid(row=2, column=0, sticky=tk.W)  # Trade
+            self.labels["trd"][0].grid(row=2, column=1, sticky=tk.W)
+            tk.Label(frame_h, text="Exploration:").grid(row=3, column=0, sticky=tk.W)  # Exploration
+            self.labels["exp"][0].grid(row=3, column=1, sticky=tk.W)
 
-            self.labels[0][0].grid(row=0, column=0, columnspan=2)  # Horizons Label
-            self.labels[0][1].grid(row=0, column=0, columnspan=2)  # Odyssey Label
+            tk.Label(frame_o, text="Odyssey", justify="center").grid(row=0, column=0, columnspan=2)  # Odyssey Label
+            tk.Label(frame_o, text="Mercenary:").grid(row=1, column=0, sticky=tk.W)  # Mercenary label
+            self.labels["merc"][0].grid(row=1, column=1, sticky=tk.W)
+            tk.Label(frame_o, text="Exobiology:").grid(row=2, column=0, sticky=tk.W)  # Exobiology
+            self.labels["exo"][0].grid(row=2, column=1, sticky=tk.W)
 
-            self.labels.append((tk.Label(frame_h, text="Combat:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text="Mercenary:"), tk.Label(frame_o)))
-            self.labels[1][0].grid(row=1, column=0, sticky=tk.W)  # Combat Label
-            self.labels[1][1].grid(row=1, column=1, sticky=tk.W)
-            self.labels[1][2].grid(row=1, column=0, sticky=tk.W)  # Mercenary label
-            self.labels[1][3].grid(row=1, column=1, sticky=tk.W)
-
-            self.labels.append((tk.Label(frame_h, text="Trade:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text="Exobiology:"), tk.Label(frame_o)))
-            self.labels[2][0].grid(row=2, column=0, sticky=tk.W)  # Trade
-            self.labels[2][1].grid(row=2, column=1, sticky=tk.W)
-            self.labels[2][2].grid(row=2, column=0, sticky=tk.W)  # Exobiology
-            self.labels[2][3].grid(row=2, column=1, sticky=tk.W)
-
-            self.labels.append((tk.Label(frame_h, text="Exploration:"), tk.Label(frame_h),
-                                tk.Label(frame_o, text=""), tk.Label(frame_o)))
-            self.labels[3][0].grid(row=3, column=0, sticky=tk.W)  # Exploration
-            self.labels[3][1].grid(row=3, column=1, sticky=tk.W)
-            self.labels[3][2].grid(row=3, column=1, sticky=tk.W)  # Blank
-            self.labels[3][3].grid(row=3, column=2, sticky=tk.W)
-
-            self.labels.append((tk.Label(frame_p, text="Powers", justify="center"),))
-            self.labels[4][0].grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
-
-            self.labels.append((tk.Label(frame_p, text="Empire:"), tk.Label(frame_p),
-                                tk.Label(frame_p, text="", justify="center"),
-                                tk.Label(frame_p, text="Federation:"), tk.Label(frame_p)))
-            self.labels[5][0].grid(row=1, column=0, sticky=tk.W)  # Empire
-            self.labels[5][1].grid(row=1, column=1, sticky=tk.W)
-            self.labels[5][2].grid(row=1, column=2, sticky=tk.W)
-            self.labels[5][3].grid(row=1, column=3, sticky=tk.W)  # Federation
-            self.labels[5][4].grid(row=1, column=4, sticky=tk.W)
+            tk.Label(frame_p, text="Powers", justify="center").grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
+            tk.Label(frame_p, text="Empire:").grid(row=1, column=0, sticky=tk.W)  # Empire
+            self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
+            tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
+            self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
 
         for widget in frame.winfo_children():
             theme.update(widget)
@@ -326,45 +302,36 @@ class RankProgress:
         :return: Nothing
         """
 
-        LOG.log("Update UI", "INFO")
+        LOG.log("Update UI", "DEBUG")
 
         if self.show_rank_row_val == 0 and self.show_rank_val == 1:
-            self.labels[1][1]["text"] = f"{combat_ranks[self.combat_rank]}  {self.combat}%"
-            self.labels[2][1]["text"] = f"{trade_ranks[self.trade_rank]}  {self.trade}%"
-            self.labels[3][1]["text"] = f"{explore_ranks[self.explore_rank]}  {self.explore}%"
+            self.labels["com"][0]["text"] = f"{combat_ranks[self.combat_rank]}  {self.combat}%"
+            self.labels["trd"][0]["text"] = f"{trade_ranks[self.trade_rank]}  {self.trade}%"
+            self.labels["exp"][0]["text"] = f"{explore_ranks[self.explore_rank]}  {self.explore}%"
 
-            self.labels[1][3]["text"] = f"{soldier_ranks[self.soldier_rank]}  {self.soldier}%"
-            self.labels[2][3]["text"] = f"{exobiologist_ranks[self.exobiologist_rank]}  {self.exobiologist}%"
+            self.labels["merc"][0]["text"] = f"{soldier_ranks[self.soldier_rank]}  {self.soldier}%"
+            self.labels["exo"][0]["text"] = f"{exobiologist_ranks[self.exobiologist_rank]}  {self.exobiologist}%"
 
-            self.labels[5][1]["text"] = f"{empire_ranks[self.empire_rank]}  {self.empire}%"
-            self.labels[5][4]["text"] = f"{federation_ranks[self.federation_rank]}  {self.federation}%"
-        elif self.show_rank_val == 0:
-            self.labels[1][1]["text"] = f"{self.combat}%"
-            self.labels[2][1]["text"] = f"{self.trade}%"
-            self.labels[3][1]["text"] = f"{self.explore}%"
+            self.labels["emp"][0]["text"] = f"{empire_ranks[self.empire_rank]}  {self.empire}%"
+            self.labels["fed"][0]["text"] = f"{federation_ranks[self.federation_rank]}  {self.federation}%"
 
-            self.labels[1][3]["text"] = f"{self.soldier}%"
-            self.labels[2][3]["text"] = f"{self.exobiologist}%"
-
-            self.labels[5][1]["text"] = f"{self.empire}%"
-            self.labels[5][4]["text"] = f"{self.federation}%"
         else:
-            self.labels[1][1]["text"] = f"{self.combat}%"
-            self.labels[3][1]["text"] = f"{self.trade}%"
-            self.labels[5][1]["text"] = f"{self.explore}%"
-            self.labels[2][1]["text"] = f"{combat_ranks[self.combat_rank]}"
-            self.labels[4][1]["text"] = f"{trade_ranks[self.trade_rank]}"
-            self.labels[6][1]["text"] = f"{explore_ranks[self.explore_rank]}"
+            self.labels["com"][0]["text"] = f"{self.combat}%"
+            self.labels["trd"][0]["text"] = f"{self.trade}%"
+            self.labels["exp"][0]["text"] = f"{self.explore}%"
+            self.labels["com"][1]["text"] = f"{combat_ranks[self.combat_rank]}"
+            self.labels["trd"][1]["text"] = f"{trade_ranks[self.trade_rank]}"
+            self.labels["exp"][1]["text"] = f"{explore_ranks[self.explore_rank]}"
 
-            self.labels[1][3]["text"] = f"{self.soldier}%"
-            self.labels[3][3]["text"] = f"{self.exobiologist}%"
-            self.labels[2][3]["text"] = f"{soldier_ranks[self.soldier_rank]}"
-            self.labels[4][3]["text"] = f"{exobiologist_ranks[self.exobiologist_rank]}"
+            self.labels["merc"][0]["text"] = f"{self.soldier}%"
+            self.labels["exo"][0]["text"] = f"{self.exobiologist}%"
+            self.labels["merc"][1]["text"] = f"{soldier_ranks[self.soldier_rank]}"
+            self.labels["exo"][1]["text"] = f"{exobiologist_ranks[self.exobiologist_rank]}"
 
-            self.labels[8][1]["text"] = f"{self.empire}%"
-            self.labels[8][4]["text"] = f"{self.federation}%"
-            self.labels[9][1]["text"] = f"{empire_ranks[self.empire_rank]}"
-            self.labels[9][4]["text"] = f"{federation_ranks[self.federation_rank]}"
+            self.labels["emp"][0]["text"] = f"{self.empire}%"
+            self.labels["fed"][0]["text"] = f"{self.federation}%"
+            self.labels["emp"][1]["text"] = f"{empire_ranks[self.empire_rank]}"
+            self.labels["fed"][1]["text"] = f"{federation_ranks[self.federation_rank]}"
 
     def update_progress(self, entry):
         """
