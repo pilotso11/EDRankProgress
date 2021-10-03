@@ -53,10 +53,6 @@ class RankProgress:
 
     def __init__(self) -> None:
         # Be sure to use names that wont collide in our config variables
-        self.show_rank = tk.IntVar(value=config.get_int('edrp_show_rank') and 1)
-        self.show_rank_row = tk.IntVar(value=config.get_int('edrp_show_rank_row') and 1)
-        self.show_rank_button = None
-        self.show_rank_row_button = None
 
         self.combat = 0
         self.trade = 0
@@ -90,8 +86,29 @@ class RankProgress:
         self.empire_rank = config.get_int('edrp_last_empire_rank')
         self.federation_rank = config.get_int('edrp_last_federation_rank')
 
+        self.show_rank = tk.IntVar(value=config.get_int('edrp_show_rank') and 1)
+        self.show_rank_row = tk.IntVar(value=config.get_int('edrp_show_rank_row') and 1)
+        self.show_combat_stats = tk.IntVar(value=config.get_int('edrp_show_combat_stats') and 1)
+        self.show_trade_stats = tk.IntVar(value=config.get_int('edrp_show_trade_stats') and 1)
+
+        self.show_rank_button = None
+        self.show_rank_row_button = None
+        self.show_combat_stats_button = None
+        self.show_trade_stats_button = None
+
         self.show_rank_val = config.get_int('edrp_show_rank')
         self.show_rank_row_val = config.get_int('edrp_show_rank_row')
+        self.show_trade_stats_val = config.get_int('edrp_show_trade_stats')
+        self.show_combat_stats_val = config.get_int('edrp_show_combat_stats')
+
+        self.bounties = 0
+        self.bounties_value = 0
+        self.bonds = 0
+        self.bonds_value = 0
+
+        self.trade_profit = 0
+
+        self.explore_profit = 0
 
         self.frame = None
         self.labels = dict()
@@ -153,10 +170,24 @@ class RankProgress:
         )
         self.show_rank_row_button.grid(columnspan=2, padx=24, pady=(5, 0), sticky=tk.W)
 
+        self.show_combat_stats_button = nb.Checkbutton(
+            # LANG: Settings>EDSM - Label on checkbox for 'send data'
+            frame, text='Show Combat Stats', variable=self.show_combat_stats,
+            command=self.on_check
+        )
+        self.show_combat_stats_button.grid(columnspan=2, padx=12, pady=(5, 0), sticky=tk.W)
+
+        self.show_trade_stats_button = nb.Checkbutton(
+            # LANG: Settings>EDSM - Label on checkbox for 'send data'
+            frame, text='Show Trade Stats', variable=self.show_trade_stats,
+            command=self.on_check
+        )
+        self.show_trade_stats_button.grid(columnspan=2, padx=12, pady=(5, 0), sticky=tk.W)
+
         label = nb.Label(frame, text=f"{PLUGIN_NAME} {VERSION}")
         label.grid(columnspan=2, padx=12, pady=(10, 0), sticky=tk.W)
 
-        self.on_check() # Set enabled state of second button
+        self.on_check()  # Set enabled state of second button
 
         return frame
 
@@ -180,8 +211,15 @@ class RankProgress:
         self.show_rank_val = self.show_rank.get()
         config.set('edrp_show_rank_row', self.show_rank_row.get())
         self.show_rank_row_val = self.show_rank_row.get()
+
+        config.set('edrp_show_trade_stats', self.show_trade_stats.get())
+        self.show_trade_stats_val = self.show_trade_stats.get()
+        config.set('edrp_show_combat_stats', self.show_combat_stats.get())
+        self.show_combat_stats_val = self.show_combat_stats.get()
+
         self.setup_frame()
         self.update_stats()
+        self.update_combat_stats()
 
     def setup_main_ui(self, parent: tk.Frame) -> tk.Frame:
         """
@@ -198,6 +236,7 @@ class RankProgress:
             self.setup_frame()
 
         self.update_stats()
+        self.update_combat_stats()
 
         return self.frame
 
@@ -208,6 +247,8 @@ class RankProgress:
 
         border = 0
 
+        frame.grid(columnspan=2)  # Full width of EDMC
+
         frame_h = tk.Frame(frame, borderwidth=border, relief="groove")
         frame_h.columnconfigure(1, weight=1)  # Pad the last column
         frame_o = tk.Frame(frame, borderwidth=border, relief="groove")
@@ -216,7 +257,7 @@ class RankProgress:
         # Pad the center column and force the labels and values to be the same width
         frame_p.columnconfigure(0, weight=1, uniform="l")
         frame_p.columnconfigure(1, weight=1, uniform="v")
-        frame_p.columnconfigure(2, weight=2)
+        frame_p.columnconfigure(2, weight=0)
         frame_p.columnconfigure(3, weight=1, uniform="l")
         frame_p.columnconfigure(4, weight=1, uniform="v")
 
@@ -239,6 +280,11 @@ class RankProgress:
         self.labels["exo"] = (tk.Label(frame_o), tk.Label(frame_o))  # exobiology
         self.labels["emp"] = (tk.Label(frame_p), tk.Label(frame_p))  # empire
         self.labels["fed"] = (tk.Label(frame_p), tk.Label(frame_p))  # Federation
+        self.labels["bounty"] = (tk.Label(frame_p), tk.Label(frame_p))  # Bounties
+        self.labels["bond"] = (tk.Label(frame_p), tk.Label(frame_p))  # Bonds
+
+        self.labels["profit"] = (tk.Label(frame_p), tk.Label(frame_p))  # Trade Profit
+        self.labels["exp_data"] = (tk.Label(frame_p), tk.Label(frame_p))  # Exploration Data
 
         if self.show_rank_row_val == 1 and self.show_rank_val == 1:
 
@@ -271,6 +317,24 @@ class RankProgress:
             self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
             self.labels["fed"][1].grid(row=2, column=3, columnspan=2)
 
+            if self.show_combat_stats_val == 1 or self.show_trade_stats_val == 1:
+                tk.Label(frame_p, text="").grid(row=3, column=0)
+
+                if self.show_combat_stats_val == 1:
+                    tk.Label(frame_p, text="Combat:").grid(row=4, column=0, sticky=tk.W)
+                    tk.Label(frame_p, text="Bounties:").grid(row=4, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                    self.labels["bounty"][0].grid(row=4, column=3, sticky=tk.W)
+                    self.labels["bounty"][1].grid(row=4, column=4, sticky=tk.W)
+                    tk.Label(frame_p, text="Bonds:").grid(row=5, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                    self.labels["bond"][0].grid(row=5, column=3, sticky=tk.W)
+                    self.labels["bond"][1].grid(row=5, column=4, sticky=tk.W)
+
+                if self.show_trade_stats_val == 1:
+                    tk.Label(frame_p, text="Profit:").grid(row=6, column=0, sticky=tk.W)
+                    self.labels["profit"][0].grid(row=6, column=1, sticky=tk.W)
+                    tk.Label(frame_p, text="Exp Data").grid(row=6, column=3, sticky=tk.W)
+                    self.labels["exp_data"][0].grid(row=6, column=4, sticky=tk.W)
+
         else:
             # Layout with 1 rows, one for Progress and Rank if enabled
             tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
@@ -292,6 +356,24 @@ class RankProgress:
             self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
             tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
             self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
+
+            if self.show_combat_stats_val == 1 or self.show_trade_stats_val == 1:
+                tk.Label(frame_p, text="").grid(row=2, column=0)
+
+                if self.show_combat_stats_val == 1:
+                    tk.Label(frame_p, text="Combat:").grid(row=3, column=0, sticky=tk.W)
+                    tk.Label(frame_p, text="Bounties:").grid(row=3, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                    self.labels["bounty"][0].grid(row=3, column=3, sticky=tk.W)
+                    self.labels["bounty"][1].grid(row=3, column=4, sticky=tk.W)
+                    tk.Label(frame_p, text="Bonds:").grid(row=4, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                    self.labels["bond"][0].grid(row=4, column=3, sticky=tk.W)
+                    self.labels["bond"][1].grid(row=4, column=4, sticky=tk.W)
+
+                if self.show_trade_stats_val == 1:
+                    tk.Label(frame_p, text="Profit:").grid(row=5, column=0, sticky=tk.W)
+                    self.labels["profit"][0].grid(row=5, column=1, sticky=tk.W)
+                    tk.Label(frame_p, text="Exp Data").grid(row=5, column=3, sticky=tk.W)
+                    self.labels["exp_data"][0].grid(row=5, column=4, sticky=tk.W)
 
         for widget in frame.winfo_children():
             theme.update(widget)
@@ -389,6 +471,36 @@ class RankProgress:
 
         self.update_stats()
 
+    def update_bounty(self, event):
+        self.bounties += 1
+        self.bounties_value += event["TotalReward"]
+        self.update_combat_stats()
+
+    def update_bond(self, event):
+        self.bonds_value += event["Reward"]
+        self.bonds += 1
+        self.update_combat_stats()
+
+    def update_combat_stats(self):
+        self.labels["bounty"][0]["text"] = f"{self.bounties}"
+        self.labels["bounty"][1]["text"] = "{:,}cr".format(self.bounties_value)
+        self.labels["bond"][0]["text"] = f"{self.bonds}"
+        self.labels["bond"][1]["text"] = "{:,}cr".format(self.bonds_value)
+
+        self.labels["profit"][0]["text"] = "{:,}cr".format(self.trade_profit)
+        self.labels["exp_data"][0]["text"] = "{:,}cr".format(self.explore_profit)
+
+    def update_market(self, event,  is_buy=False):
+        if is_buy:
+            pass  # nothing for now
+        else:
+            self.trade_profit += event["count"] * (event["SellPrice"] - event["AvgPricePaid"])
+        self.update_combat_stats()
+
+    def update_exp_data(self, event):
+        self.explore_profit += event["TotalEarnings"]
+        self.update_combat_stats()
+
 
 plug = RankProgress()
 
@@ -417,8 +529,26 @@ def plugin_app(parent: tk.Frame) -> Optional[tk.Frame]:
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):
     if entry["event"] == "Progress":
-        LOG.log(f"Progress Event {entry}", "INFO")
+        LOG.log(f"Progress Event {entry}", "DEBUG")
         plug.update_progress(entry)
     elif entry["event"] == "Rank":
-        LOG.log(f"Rank event {entry}", "INFO")
+        LOG.log(f"Rank event {entry}", "DEBUG")
         plug.update_ranks(entry)
+    elif entry["event"] == "Bounty":
+        LOG.log(f"Bounty event {entry}", "DEBUG")
+        plug.update_bounty(entry)
+    elif entry["event"] == "FactionKillBond":
+        LOG.log(f"Bond event {entry}", "DEBUG")
+        plug.update_bond(entry)
+    elif entry["event"] == "MarketBuy":
+        LOG.log(f"Market Buy {entry}", "DEBUG")
+        plug.update_market(entry, True)
+    elif entry["event"] == "MarketSell":
+        LOG.log(f"Market Sell {entry}", "INFO")
+        plug.update_market(entry, False)
+    elif entry["event"] == "SellExplorationData":
+        LOG.log(f"Exploration sell {entry}", "INFO")
+        plug.update_exp_data(entry)
+    elif entry["event"] == "MultiSellExplorationData":
+        LOG.log(f"Exploration sell {entry}", "INFO")
+        plug.update_exp_data(entry)
