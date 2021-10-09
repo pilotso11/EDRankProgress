@@ -283,97 +283,58 @@ class RankProgress:
         self.labels["bounty"] = (tk.Label(frame_p), tk.Label(frame_p))  # Bounties
         self.labels["bond"] = (tk.Label(frame_p), tk.Label(frame_p))  # Bonds
 
-        self.labels["profit"] = (tk.Label(frame_p), tk.Label(frame_p))  # Trade Profit
-        self.labels["exp_data"] = (tk.Label(frame_p), tk.Label(frame_p))  # Exploration Data
+        self.labels["profit"] = (tk.Label(frame_p), )  # Trade Profit
+        self.labels["exp_data"] = (tk.Label(frame_p), )  # Exploration Data
 
+        # Layout with 2 rows, one for Progress and one for Rank
+        tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
+        tk.Label(frame_h, text="Combat:").grid(row=1, column=0, sticky=tk.W)  # Combat Label
+        self.labels["com"][0].grid(row=1, column=1, sticky=tk.W)  # combat pct
+        tk.Label(frame_h, text="Trade:").grid(row=3, column=0, sticky=tk.W)  # trade label
+        self.labels["trd"][0].grid(row=3, column=1, sticky=tk.W)
+        tk.Label(frame_h, text="Exploration:").grid(row=5, column=0, sticky=tk.W)  # Exploration
+        self.labels["exp"][0].grid(row=5, column=1, sticky=tk.W)
+
+        tk.Label(frame_o, text="Odyssey", justify="center").grid(row=0, column=0, columnspan=2)  # Odyssey Label
+        tk.Label(frame_o, text="Mercenary:").grid(row=1, column=0, sticky=tk.W)  # Mercenary label
+        self.labels["merc"][0].grid(row=1, column=1, sticky=tk.W)  # merc pct
+        tk.Label(frame_o, text="Exobiology:").grid(row=3, column=0, sticky=tk.W)  # Exobiology
+        self.labels["exo"][0].grid(row=3, column=1, sticky=tk.W)
+
+        tk.Label(frame_p, text="Powers", justify="center").grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
+        tk.Label(frame_p, text="Empire:").grid(row=1, column=0, sticky=tk.W)  # Empire
+        self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
+        tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
+        self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
+
+        # Do we show the ranks?
         if self.show_rank_row_val == 1 and self.show_rank_val == 1:
-
-            # Layout with 2 rows, one for Progress and one for Rank
-
-            tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
-            tk.Label(frame_h, text="Combat:").grid(row=1, column=0, sticky=tk.W)  # Combat Label
-            self.labels["com"][0].grid(row=1, column=1, sticky=tk.W)  # combat pct
             self.labels["com"][1].grid(row=2, column=0, columnspan=2)  # combat rank
-            tk.Label(frame_h, text="Trade:").grid(row=3, column=0, sticky=tk.W)  # trade label
-            self.labels["trd"][0].grid(row=3, column=1, sticky=tk.W)
             self.labels["trd"][1].grid(row=4, column=0, columnspan=2)
-            tk.Label(frame_h, text="Exploration:").grid(row=5, column=0, sticky=tk.W)  # Exploration
-            self.labels["exp"][0].grid(row=5, column=1, sticky=tk.W)
             self.labels["exp"][1].grid(row=6, column=0, columnspan=2)
-
-            tk.Label(frame_o, text="Odyssey", justify="center").grid(row=0, column=0, columnspan=2)  # Odyssey Label
-            tk.Label(frame_o, text="Mercenary:").grid(row=1, column=0, sticky=tk.W)  # Mercenary label
-            self.labels["merc"][0].grid(row=1, column=1, sticky=tk.W)  # merc pct
             self.labels["merc"][1].grid(row=2, column=0, columnspan=2)  # merc rank
-            tk.Label(frame_o, text="Exobiology:").grid(row=3, column=0, sticky=tk.W)  # Exobiology
-            self.labels["exo"][0].grid(row=3, column=1, sticky=tk.W)
             self.labels["exo"][1].grid(row=4, column=0, columnspan=2)
-
-            tk.Label(frame_p, text="Powers", justify="center").grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
-            tk.Label(frame_p, text="Empire:").grid(row=1, column=0, sticky=tk.W)  # Empire
-            self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
             self.labels["emp"][1].grid(row=2, column=0, columnspan=2)
-            tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
-            self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
             self.labels["fed"][1].grid(row=2, column=3, columnspan=2)
 
-            if self.show_combat_stats_val == 1 or self.show_trade_stats_val == 1:
-                tk.Label(frame_p, text="").grid(row=3, column=0)
+        # Do we show combat stats? or trade stats?
+        if self.show_combat_stats_val == 1 or self.show_trade_stats_val == 1:
+            tk.Label(frame_p, text="").grid(row=3, column=0)
 
-                if self.show_combat_stats_val == 1:
-                    tk.Label(frame_p, text="Combat:").grid(row=4, column=0, sticky=tk.W)
-                    tk.Label(frame_p, text="Bounties:").grid(row=4, column=1, columnspan=2, sticky=tk.W)  # Bounties
-                    self.labels["bounty"][0].grid(row=4, column=3, sticky=tk.W)
-                    self.labels["bounty"][1].grid(row=4, column=4, sticky=tk.W)
-                    tk.Label(frame_p, text="Bonds:").grid(row=5, column=1, columnspan=2, sticky=tk.W)  # Bounties
-                    self.labels["bond"][0].grid(row=5, column=3, sticky=tk.W)
-                    self.labels["bond"][1].grid(row=5, column=4, sticky=tk.W)
+            if self.show_combat_stats_val == 1:
+                tk.Label(frame_p, text="Combat:").grid(row=4, column=0, sticky=tk.W)
+                tk.Label(frame_p, text="Bounties:").grid(row=4, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                self.labels["bounty"][0].grid(row=4, column=3, sticky=tk.W)
+                self.labels["bounty"][1].grid(row=4, column=4, sticky=tk.W)
+                tk.Label(frame_p, text="Bonds:").grid(row=5, column=1, columnspan=2, sticky=tk.W)  # Bounties
+                self.labels["bond"][0].grid(row=5, column=3, sticky=tk.W)
+                self.labels["bond"][1].grid(row=5, column=4, sticky=tk.W)
 
-                if self.show_trade_stats_val == 1:
-                    tk.Label(frame_p, text="Profit:").grid(row=6, column=0, sticky=tk.W)
-                    self.labels["profit"][0].grid(row=6, column=1, sticky=tk.W)
-                    tk.Label(frame_p, text="Exp Data").grid(row=6, column=3, sticky=tk.W)
-                    self.labels["exp_data"][0].grid(row=6, column=4, sticky=tk.W)
-
-        else:
-            # Layout with 1 rows, one for Progress and Rank if enabled
-            tk.Label(frame_h, text="Horizons", justify="center").grid(row=0, column=0, columnspan=2)  # Horizons Label
-            tk.Label(frame_h, text="Combat:").grid(row=1, column=0, sticky=tk.W)  # Combat Label
-            self.labels["com"][0].grid(row=1, column=1, sticky=tk.W)
-            tk.Label(frame_h, text="Trade:").grid(row=2, column=0, sticky=tk.W)  # Trade
-            self.labels["trd"][0].grid(row=2, column=1, sticky=tk.W)
-            tk.Label(frame_h, text="Exploration:").grid(row=3, column=0, sticky=tk.W)  # Exploration
-            self.labels["exp"][0].grid(row=3, column=1, sticky=tk.W)
-
-            tk.Label(frame_o, text="Odyssey", justify="center").grid(row=0, column=0, columnspan=2)  # Odyssey Label
-            tk.Label(frame_o, text="Mercenary:").grid(row=1, column=0, sticky=tk.W)  # Mercenary label
-            self.labels["merc"][0].grid(row=1, column=1, sticky=tk.W)
-            tk.Label(frame_o, text="Exobiology:").grid(row=2, column=0, sticky=tk.W)  # Exobiology
-            self.labels["exo"][0].grid(row=2, column=1, sticky=tk.W)
-
-            tk.Label(frame_p, text="Powers", justify="center").grid(row=0, column=0, columnspan=5, sticky=tk.W + tk.E)
-            tk.Label(frame_p, text="Empire:").grid(row=1, column=0, sticky=tk.W)  # Empire
-            self.labels["emp"][0].grid(row=1, column=1, sticky=tk.W)
-            tk.Label(frame_p, text="Federation:").grid(row=1, column=3, sticky=tk.W)  # Federation
-            self.labels["fed"][0].grid(row=1, column=4, sticky=tk.W)
-
-            if self.show_combat_stats_val == 1 or self.show_trade_stats_val == 1:
-                tk.Label(frame_p, text="").grid(row=2, column=0)
-
-                if self.show_combat_stats_val == 1:
-                    tk.Label(frame_p, text="Combat:").grid(row=3, column=0, sticky=tk.W)
-                    tk.Label(frame_p, text="Bounties:").grid(row=3, column=1, columnspan=2, sticky=tk.W)  # Bounties
-                    self.labels["bounty"][0].grid(row=3, column=3, sticky=tk.W)
-                    self.labels["bounty"][1].grid(row=3, column=4, sticky=tk.W)
-                    tk.Label(frame_p, text="Bonds:").grid(row=4, column=1, columnspan=2, sticky=tk.W)  # Bounties
-                    self.labels["bond"][0].grid(row=4, column=3, sticky=tk.W)
-                    self.labels["bond"][1].grid(row=4, column=4, sticky=tk.W)
-
-                if self.show_trade_stats_val == 1:
-                    tk.Label(frame_p, text="Profit:").grid(row=5, column=0, sticky=tk.W)
-                    self.labels["profit"][0].grid(row=5, column=1, sticky=tk.W)
-                    tk.Label(frame_p, text="Exp Data").grid(row=5, column=3, sticky=tk.W)
-                    self.labels["exp_data"][0].grid(row=5, column=4, sticky=tk.W)
+            if self.show_trade_stats_val == 1:
+                tk.Label(frame_p, text="Profit:").grid(row=6, column=0, sticky=tk.W)
+                self.labels["profit"][0].grid(row=6, column=1, sticky=tk.W)
+                tk.Label(frame_p, text="Exp Data").grid(row=6, column=3, sticky=tk.W)
+                self.labels["exp_data"][0].grid(row=6, column=4, sticky=tk.W)
 
         for widget in frame.winfo_children():
             theme.update(widget)
@@ -494,7 +455,7 @@ class RankProgress:
         if is_buy:
             pass  # nothing for now
         else:
-            self.trade_profit += event["count"] * (event["SellPrice"] - event["AvgPricePaid"])
+            self.trade_profit += event["Count"] * (event["SellPrice"] - event["AvgPricePaid"])
         self.update_combat_stats()
 
     def update_exp_data(self, event):
