@@ -444,12 +444,12 @@ class RankProgress:
 
     def update_combat_stats(self):
         self.labels["bounty"][0]["text"] = f"{self.bounties}"
-        self.labels["bounty"][1]["text"] = "{:,}cr".format(self.bounties_value)
+        self.labels["bounty"][1]["text"] = "{:,.0f}Kcr".format(self.bounties_value/1000)
         self.labels["bond"][0]["text"] = f"{self.bonds}"
-        self.labels["bond"][1]["text"] = "{:,}cr".format(self.bonds_value)
+        self.labels["bond"][1]["text"] = "{:,.0f}Kcr".format(self.bonds_value/1000)
 
-        self.labels["profit"][0]["text"] = "{:,}cr".format(self.trade_profit)
-        self.labels["exp_data"][0]["text"] = "{:,}cr".format(self.explore_profit)
+        self.labels["profit"][0]["text"] = "{:,.0f}Kcr".format(self.trade_profit/1000)
+        self.labels["exp_data"][0]["text"] = "{:,.0f}Kcr".format(self.explore_profit/1000)
 
     def update_market(self, event,  is_buy=False):
         if is_buy:
