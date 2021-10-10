@@ -5,6 +5,8 @@ Licensed under AGPLv3
 Version 1.0 - initial release
 Version 1.1 - changed layout and made layout configurable
 Version 1.2 - Removed borders, tweaked settings ui
+Version 1.3 - Add current session progress
+
 """
 
 import tkinter as tk
@@ -17,7 +19,7 @@ from config import appname, config
 from theme import theme
 
 PLUGIN_NAME = "EDRankProgress"
-VERSION = "1.2"
+VERSION = "1.3"
 
 LOG = RankLogger()
 
