@@ -25,11 +25,13 @@ There are options to toggle display of the rank as well as the progress.
 
 ![screenshot](screenshot2.png?raw=true "Screenshot")
 
-And an option to display the rank on a separate line for a thinner window.
+An option to display the rank on a separate line for a thinner window.
 
 ![screenshot](screenshot3.png?raw=true "Screenshot")
 
+An option to show your daily progress towards these ranks (kills, credits etc.)
 
+![screenshot](screenshot4.png?raw=true "Screenshot")
     
 Enjoy.
 
